@@ -1,0 +1,95 @@
+body {
+  min-width: 600px;
+  min-height: 400px;
+  background-color: #17141f;
+  color: #85808f;
+  margin: 0;
+}
+
+#status {
+  font-size: x-large;
+  margin: 15px;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
+a, a:active {
+  color: #faf9fa;
+  text-decoration: none;
+}
+
+img {
+  border-radius: 4px;
+}
+
+progress {
+  -webkit-appearance: none;
+  appearance: none;
+  float: left;
+  clear: both;
+  width: 178px;
+  height:5px;
+}
+progress[value]::-webkit-progress-bar {
+  background-color: #4b367c;
+}
+progress[value]::-webkit-progress-value {
+  background-color: #b19dd8;
+}
+
+.video {
+  clear: both;
+  background-color: #201c2b;
+  padding: 20px;
+  min-height: 100px;
+  margin-bottom: 5px;
+}
+.video p {
+  padding: 5px 0;
+}
+
+.video a.thumbnail {
+  float: left;
+  padding-right: 20px;
+}
+.video img.thumbnail {
+  float: left;
+  height: 100px;
+}
+
+.video p.channel {
+  line-height: 16px;
+}
+.video img.channel_logo {
+  float: left;
+  height: 16px;
+}
+.video span.channel_name {
+  font-weight: bold;
+  margin-left: 5px;
+}
+.video .channel_display_name {
+  float: left;
+}
+.video .video_title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+#more_container {
+  clear: both;
+  margin: 40px 0;
+  text-align: center;
+}
+#more {
+  width: 40%;
+  font-size: large;
+}
+.hidden {
+  display: none;
+}
