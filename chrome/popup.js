@@ -31,6 +31,12 @@ function relative_date(d) {
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
+function error(reason) {
+  const status = document.getElementById("status");
+  status.removeChild(status.firstChild);
+  status.appendChild(document.createTextNode(`Error: ${reason}`));
+}
+
 document.addEventListener("DOMContentLoaded", async function() {
   let status = document.getElementById("status");
   let videos = document.getElementById("videos");
@@ -99,22 +105,23 @@ document.addEventListener("DOMContentLoaded", async function() {
         return;
       }
       resolve(cookie.value);
-    })
-  }).catch((reason) => {
-    status.removeChild(status.firstChild);
-    status.appendChild(document.createTextNode(`Error: ${reason}`));
-  });
+    });
+  }).catch(error);
   if (authToken == undefined) return;
   console.log(authToken);
 
   const externalUserID = await new Promise((resolve) => {
     chrome.cookies.get({
       url: "https://www.twitch.tv/",
-      name: "User",
+      name: "persistent",
     }, function(cookie) {
-      resolve(cookie.value.split("&").find(v => v.startsWith("ExternalUserID=")).split("=")[1]);
-    })
-  });
+      if (cookie == null) {
+        reject("Problem reading cookies...");
+        return;
+      }
+      resolve(cookie.value.split("%")[0]);
+    });
+  }).catch(error);
   console.log(externalUserID);
 
   fetch(`https://api.twitch.tv/v5/resumewatching/user/${externalUserID}`, {
