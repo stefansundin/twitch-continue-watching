@@ -19,7 +19,8 @@
   },
   "permissions": [
     "https://*.twitch.tv/",
-    "cookies"
+    "cookies",
+    "activeTab"
   ],
   "manifest_version": 2
 }

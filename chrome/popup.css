@@ -81,7 +81,7 @@ progress[value]::-webkit-progress-value {
 }
 
 
-#more_container {
+#more_container, #spoiler_free_container {
   clear: both;
   margin: 40px 0;
   text-align: center;

@@ -158,4 +158,91 @@ document.addEventListener("DOMContentLoaded", async function() {
       }, false);
     }
   });
+
+
+
+  const spoiler_free_container = document.getElementById("spoiler_free_container");
+  const next_video_button = document.getElementById("next_video");
+  const prev_video_button = document.getElementById("prev_video");
+  let tab;
+
+  function seek_video() {
+    let navigate = -1;
+    if (this == prev_video_button) {
+      navigate = 1;
+    }
+
+    let video_id = tab.url.split("/")[4];
+    if (video_id.includes("?")) {
+      video_id = video_id.split("?")[0];
+    }
+
+    fetch(`https://api.twitch.tv/helix/videos?id=${video_id}`, {
+      headers: {
+        "Client-ID": client_id,
+      }
+    })
+    .then(function(response) {
+      console.log(response);
+      return response.json();
+    })
+    .then(function(data) {
+      console.log(data);
+      if (data == null) {
+        alert("Bad response from server.");
+        return;
+      }
+      console.log(data.data[0]);
+      const user_id = data.data[0].user_id;
+
+      fetch(`https://api.twitch.tv/helix/videos?user_id=${user_id}`, {
+        headers: {
+          "Client-ID": client_id,
+        }
+      })
+      .then(function(response) {
+        console.log(response);
+        return response.json();
+      })
+      .then(function(data) {
+        console.log(data);
+        if (data == null) {
+          alert("Bad response from server.");
+          return;
+        }
+        const i = data.data.findIndex(function(video) {
+          return video_id == video.id;
+        });
+        if (i == -1) {
+          alert("Could not find this video in the user's videos.. needs pagination probably.");
+          return;
+        }
+        if (i+navigate < 0) {
+          alert("This is the most recent video from this user.");
+          return;
+        }
+        if (i+navigate >= data.data.length) {
+          alert("This is the oldest video from this user. There may be more, but this code can't paginate yet.");
+          return;
+        }
+        const video = data.data[i+navigate];
+        browser.tabs.update(tab.id, {
+          url: video.url,
+        });
+      });
+    });
+  }
+
+  browser.tabs.query({
+    currentWindow: true,
+    active: true,
+  }).then(function(tabs) {
+    tab = tabs[0];
+    console.log(tabs);
+    if (tab.url.startsWith("https://www.twitch.tv/videos/")) {
+      spoiler_free_container.classList.remove("hidden");
+      next_video_button.addEventListener("click", seek_video, false);
+      prev_video_button.addEventListener("click", seek_video, false);
+    }
+  });
 });
