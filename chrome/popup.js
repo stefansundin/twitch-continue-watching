@@ -38,10 +38,11 @@ function error(reason) {
 }
 
 document.addEventListener("DOMContentLoaded", async function() {
-  let status = document.getElementById("status");
-  let videos = document.getElementById("videos");
-  let more_container = document.getElementById("more_container");
-  let more = document.getElementById("more");
+  const client_id = "kimne78kx3ncx6brgo4mv6wki5h1ko";
+  const status = document.getElementById("status");
+  const videos = document.getElementById("videos");
+  const more_container = document.getElementById("more_container");
+  const more = document.getElementById("more");
 
   function add_video(entry) {
     let div = document.createElement("div");
@@ -128,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     headers: {
       "User-Agent": "okhttp/3.9.1", // using what the Android app uses
       "Accept": "application/vnd.twitchtv.v3+json",
-      "client-id": "kimne78kx3ncx6brgo4mv6wki5h1ko",
+      "client-id": client_id,
       "Authorization": `OAuth ${authToken}`,
     }
   })
