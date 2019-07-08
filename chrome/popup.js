@@ -60,22 +60,22 @@ document.addEventListener("DOMContentLoaded", async function() {
     const more_container = document.getElementById("more_container");
     const more = document.getElementById("more");
 
-    function add_video(entry) {
+    function add_video(edge) {
       let div = document.createElement("div");
       div.classList.add("video");
 
       let a1 = document.createElement("a");
-      a1.title = `${to_duration(entry.position)} / ${to_duration(entry.video.length)} (${to_percent(entry.position/entry.video.length)})`;
+      a1.title = `${to_duration(edge.history.position)} / ${to_duration(edge.node.lengthSeconds)} (${to_percent(edge.history.position/edge.node.lengthSeconds)})`;
       a1.classList.add("thumbnail");
       a1.target = "_blank";
-      a1.href = entry.video.url;
+      a1.href = `https://www.twitch.tv/videos/${edge.node.id}`;
       let img = document.createElement("img");
-      img.src = entry.video.preview.medium;
+      img.src = edge.node.previewThumbnailURLLarge;
       img.classList.add("thumbnail");
       a1.appendChild(img);
       let progress = document.createElement("progress");
-      progress.value = entry.position;
-      progress.max = entry.video.length;
+      progress.value = edge.history.position;
+      progress.max = edge.node.lengthSeconds;
       a1.appendChild(progress);
       div.appendChild(a1);
 
@@ -83,71 +83,59 @@ document.addEventListener("DOMContentLoaded", async function() {
       p1.classList.add("channel");
       let a2 = document.createElement("a");
       a2.target = "_blank";
-      a2.href = entry.video.channel.url;
+      a2.href = `https://www.twitch.tv/${edge.node.owner.login}`;
       let channel_logo = document.createElement("img");
-      channel_logo.src = entry.video.channel.logo;
+      channel_logo.src = edge.node.owner.profileImageURL;
       channel_logo.classList.add("channel_logo");
       a2.appendChild(channel_logo);
       let span1 = document.createElement("span");
       span1.classList.add("channel_name");
-      span1.appendChild(document.createTextNode(entry.video.channel.display_name));
+      span1.appendChild(document.createTextNode(edge.node.owner.displayName));
       a2.appendChild(span1);
       p1.appendChild(a2);
       div.appendChild(p1);
 
       let p2 = document.createElement("p");
       p2.classList.add("video_title");
-      p2.title = entry.video.title;
+      p2.title = edge.node.vodTitle;
       let a3 = document.createElement("a");
       a3.target = "_blank";
-      a3.href = entry.video.url;
-      a3.appendChild(document.createTextNode(entry.video.title));
+      a3.href = `https://www.twitch.tv/videos/${edge.node.id}`;
+      a3.appendChild(document.createTextNode(edge.node.vodTitle));
       p2.appendChild(a3);
       div.appendChild(p2);
 
       let p3 = document.createElement("p");
-      p3.appendChild(document.createTextNode(`${relative_date(new Date(entry.updated_at))} | ${entry.video.game}`));
+      p3.appendChild(document.createTextNode(`${relative_date(new Date(edge.history.updatedAt))} | ${edge.node.game.name}`));
       div.appendChild(p3);
 
       videos.appendChild(div);
     }
 
-    const externalUserID = await new Promise((resolve) => {
-      chrome.cookies.get({
-        url: "https://www.twitch.tv/",
-        name: "persistent",
-      }, function(cookie) {
-        if (cookie == null) {
-          reject("Problem reading cookies...");
-          return;
-        }
-        resolve(cookie.value.split("%")[0]);
-      });
-    }).catch(error);
-    console.log(externalUserID);
-
-    fetch(`https://api.twitch.tv/v5/resumewatching/user/${externalUserID}`, {
+    fetch("https://gql.twitch.tv/gql", {
+      method: "POST",
       headers: {
-        "User-Agent": "okhttp/3.9.1", // using what the Android app uses
-        "Accept": "application/vnd.twitchtv.v3+json",
-        "client-id": client_id,
+        "Accept": "application/json",
+        "Content-Type": "application/json; charset=utf-8",
+        "Client-ID": client_id,
         "Authorization": `OAuth ${authToken}`,
-      }
+      },
+      body: '{"operationName":"ResumeWatchingVideosQuery","variables":{"limit":10},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"1543abd5de45fdef0ab9715cc52aafbc5cb45b43735b2ceedffbab2d92689dd2"}},"query":"query ResumeWatchingVideosQuery($limit: Int!) {  currentUser {    __typename    viewedVideos(first: $limit) {      __typename      edges {        __typename        history {          __typename          position          updatedAt        }        node {          __typename          ...VodModelFragment        }      }    }  }}fragment VodModelFragment on Video {  __typename  id  broadcastType  vodDate: createdAt  owner {    __typename    ...ChannelModelFragment  }  game {    __typename    name    id  }  self {    __typename    isRestricted  }  lengthSeconds  previewThumbnailURLMedium: previewThumbnailURL(width: 320, height: 180)  previewThumbnailURLLarge: previewThumbnailURL(width: 640, height: 360)  publishedAt  vodTitle: title  vodViewCount: viewCount  contentTags {    __typename    ...TagModelFragment  }}fragment ChannelModelFragment on User {  __typename  stream {    __typename    id    game {      __typename      id      name    }  }  ...ChannelModelWithoutStreamModelFragment}fragment ChannelModelWithoutStreamModelFragment on User {  __typename  channelId: id  profileViewCount  followers {    __typename    totalCount  }  description  login  displayName  profileImageURL(width: 300)  bannerImageURL  roles {    __typename    isPartner    isAffiliate  }}fragment TagModelFragment on Tag {  __typename  id  localizedName  tagName  isAutomated  isLanguageTag  localizedDescription}"}',
     })
     .then(function(response) {
       console.log(response);
       return response.json();
     })
-    .then(function(data) {
-      console.log(data);
-      if (data == null) {
+    .then(function(json) {
+      console.log(json);
+      if (json == null) {
         return;
       }
 
       status.classList.add("hidden");
-      data = data.filter(function(entry) {
+      let data = json.data.currentUser.viewedVideos.edges.filter(function(edge) {
         // not sure what the app is using for its logic, but we are getting a lot more videos than are displayed in the app...
-        return entry.position > 300;
+        return edge.history.position > 300;
       });
 
       data.slice(0, 5).forEach(add_video);
