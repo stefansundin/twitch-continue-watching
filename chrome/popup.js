@@ -219,6 +219,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         chrome.tabs.update(tab.id, {
           url: video.url,
         });
+        window.close();
       });
     });
   }
