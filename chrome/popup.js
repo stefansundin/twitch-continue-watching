@@ -37,6 +37,11 @@ function error(reason) {
   status.appendChild(document.createTextNode(`Error: ${reason}`));
 }
 
+// Firefox doesn't automatically close the popup when a link is clicked
+function close_window_soon() {
+  setTimeout(window.close, 10);
+}
+
 document.addEventListener("DOMContentLoaded", async function() {
   const client_id = "kimne78kx3ncx6brgo4mv6wki5h1ko";
 
@@ -69,6 +74,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       a1.classList.add("thumbnail");
       a1.target = "_blank";
       a1.href = `https://www.twitch.tv/videos/${edge.node.id}`;
+      a1.addEventListener("click", close_window_soon, false);
       let img = document.createElement("img");
       img.src = edge.node.previewThumbnailURLLarge;
       img.classList.add("thumbnail");
@@ -84,6 +90,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       let a2 = document.createElement("a");
       a2.target = "_blank";
       a2.href = `https://www.twitch.tv/${edge.node.owner.login}`;
+      a2.addEventListener("click", close_window_soon, false);
       let channel_logo = document.createElement("img");
       channel_logo.src = edge.node.owner.profileImageURL;
       channel_logo.classList.add("channel_logo");
@@ -101,6 +108,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       let a3 = document.createElement("a");
       a3.target = "_blank";
       a3.href = `https://www.twitch.tv/videos/${edge.node.id}`;
+      a3.addEventListener("click", close_window_soon, false);
       a3.appendChild(document.createTextNode(edge.node.vodTitle));
       p2.appendChild(a3);
       div.appendChild(p2);
